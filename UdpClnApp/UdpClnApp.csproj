@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\PGN_Base.cs" />
+    <Compile Include="..\PGN_Const.cs" />
     <Compile Include="..\PGN_Udp.cs" />
     <Compile Include="UdpClnApp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

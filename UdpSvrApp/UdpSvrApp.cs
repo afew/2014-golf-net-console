@@ -14,7 +14,7 @@ class UdpSvrApp
 	{
 		System.Console.WriteLine("Start Udp Server ...");
 
-		PGN.Udp	pNet = new PGN.Udp(PGN.NTC.DNF_SERVER);
+		PGN.Udp	pNet = new PGN.Udp(PGN.NTC.PGN_SERVER);
 
 		pNet.Create("127.0.0.1", 20000);
 

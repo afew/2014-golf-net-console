@@ -1,0 +1,9 @@
+D:\_desktop\net\PGN_console_20140210\TcpClnApp\bin\Debug\TcpClnApp.exe
+D:\_desktop\net\PGN_console_20140210\TcpClnApp\bin\Debug\TcpClnApp.pdb
+D:\_desktop\net\PGN_console_20140210\TcpClnApp\obj\Debug\ResolveAssemblyReference.cache
+D:\_desktop\net\PGN_console_20140210\TcpClnApp\obj\Debug\TcpClnApp.exe
+D:\_desktop\net\PGN_console_20140210\TcpClnApp\obj\Debug\TcpClnApp.pdb
+E:\_desktop\net\PGN_console_20140210\TcpClnApp\obj\Debug\TcpClnApp.exe
+E:\_desktop\net\PGN_console_20140210\TcpClnApp\obj\Debug\TcpClnApp.pdb
+E:\_desktop\net\PGN_console_20140210\TcpClnApp\bin\Debug\TcpClnApp.exe
+E:\_desktop\net\PGN_console_20140210\TcpClnApp\bin\Debug\TcpClnApp.pdb

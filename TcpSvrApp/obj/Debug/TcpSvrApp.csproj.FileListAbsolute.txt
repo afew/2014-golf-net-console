@@ -1,0 +1,10 @@
+D:\_desktop\net\PGN_console_20140210\TcpSvrApp\bin\Debug\TcpSvrApp.exe
+D:\_desktop\net\PGN_console_20140210\TcpSvrApp\bin\Debug\TcpSvrApp.pdb
+D:\_desktop\net\PGN_console_20140210\TcpSvrApp\obj\Debug\ResolveAssemblyReference.cache
+D:\_desktop\net\PGN_console_20140210\TcpSvrApp\obj\Debug\TcpSvrApp.exe
+D:\_desktop\net\PGN_console_20140210\TcpSvrApp\obj\Debug\TcpSvrApp.pdb
+E:\_desktop\net\PGN_console_20140210\TcpSvrApp\obj\Debug\TcpSvrApp.exe
+E:\_desktop\net\PGN_console_20140210\TcpSvrApp\obj\Debug\TcpSvrApp.pdb
+E:\_desktop\net\PGN_console_20140210\TcpSvrApp\bin\Debug\TcpSvrApp.exe
+E:\_desktop\net\PGN_console_20140210\TcpSvrApp\bin\Debug\TcpSvrApp.pdb
+E:\_desktop\net\PGN_console_20140210\TcpSvrApp\obj\Debug\TcpSvrApp.csprojResolveAssemblyReference.cache
