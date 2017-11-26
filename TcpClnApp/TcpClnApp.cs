@@ -15,6 +15,7 @@ class TcpClnApp
 		PGN.TcpCln	pNet = new PGN.TcpCln();
 		PGN.Packet	pPck = new PGN.Packet();
 
+		//pNet.Create(null, "192.168.0.20", 50000);
 		pNet.Create(null, "192.168.0.7", 50000);
 		//pNet.Create(null, "127.0.0.1", 50000);
 		pNet.Connect();
@@ -25,6 +26,14 @@ class TcpClnApp
 		{
 			++c;
 			Thread.Sleep(1000);
+
+
+			if(PGN.NTC.OK != pNet.IsConnected)
+				continue;
+
+
+			if(-1 == pNet.NetId)
+				continue;
 
 			//float x = 100;
 			//float y = 200;

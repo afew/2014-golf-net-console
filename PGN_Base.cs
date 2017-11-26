@@ -16,57 +16,54 @@ namespace PGN
 	// constant
 	static class NTC
 	{
-		// packet header
-		public const int PCK_DATA				= 1360					;		// packet data size
-		public const int PCK_HEAD				= 2 + 2					;		// len + opp
-		public const int PCK_MAX				= PCK_HEAD + PCK_DATA	;		// max mtu for application
-
-		//
-		public const int PCK_KEY				= 128+32				;		// Key size
-		public const int PCK_LIST				= 10					;		// Buffer List count
-
+		// packet header/info
+		public const int PCK_DATA					= 1360				;		// packet data size
+		public const int PCK_HEAD					= 2 + 2				;		// len + opp
+		public const int PCK_MAX					= PCK_HEAD+PCK_DATA	;		// max mtu for application
+		public const int PCK_KEY					= 128+32			;		// Key size
+		public const int PCK_LIST					= 10				;		// Buffer List count
 
 		// Network state
-		public const int OK						= 0						;		// Network Ok
-		public const int EFAIL					= -1					;		// Network fail
-		public const int WAIT					= 1						;		// Network wait message after sending data
-		public const int DEFAULT				= OK					;		// Network Default state
+		public const int OK							= 0					;		// Network Ok
+		public const int EFAIL						= -1				;		// Network fail
+		public const int WAIT						= 1					;		// Network wait message after sending data
+		public const int DEFAULT					= OK				;		// Network Default state
+		public const int TIME_OUT					= 15 * 1000			;		// 15s timeout
 
-
-		public const int MAX_CONNECT	= 3600							;		// packet data size
-		public const int DNF_CLIENT		= 0								;		// Net app type: client
-		public const int DNF_SERVER		= 1								;		// Net app type: server
+		public const int MAX_CONNECT				= 3600				;		// Max connection
+		public const int PGN_CLIENT					= 0					;		// Net app type: client
+		public const int PGN_SERVER					= 1					;		// Net app type: server
 
 		// Operation Protocol
-		public const int CS_REQ_LOGIN			= 103					;		// snd: character name: uchar20
-		public const int SC_ANS_LOGIN			= 104					;		// rcv: UID(uint32) + character name(char20)
-		public const int SC_BROADCAST_USERLIST	= 105					;		// rcv: User Number(uint8) + [UID(uint32) + charcater name(uchar20) + owner(uint8) + ready(uint8)] * N
-		public const int SC_BROADCAST_LOGOUT	= 114					;		// rcv: UID
+		public const int CS_REQ_LOGIN				= 103				;		// snd: character name: uchar20
+		public const int SC_ANS_LOGIN				= 104				;		// rcv: UID(uint32) + character name(char20)
+		public const int SC_BROADCAST_USERLIST		= 105				;		// rcv: User Number(uint8) + [UID(uint32) + charcater name(uchar20) + owner(uint8) + ready(uint8)] * N
+		public const int SC_BROADCAST_LOGOUT		= 114				;		// rcv: UID
 
-		public const int CS_REQ_READY			= 106					;		// snd:
-		public const int SC_BROADCAST_READY		= 107					;		// rcv: UID, ready?(RET_READY:RET_NOTREADY)
+		public const int CS_REQ_READY				= 106				;		// snd:
+		public const int SC_BROADCAST_READY			= 107				;		// rcv: UID, ready?(RET_READY:RET_NOTREADY)
 
-		public const int CS_REQ_GO				= 108					;		// snd:
-		public const int SC_REQ_GO				= 109					;		// rcv: uint8
-		public const int SC_BROADCAST_START		= 110					;		// rcv: UID, ready?(RET_READY:RET_NOTREADY)
+		public const int CS_REQ_GO					= 108				;		// snd:
+		public const int SC_REQ_GO					= 109				;		// rcv: uint8
+		public const int SC_BROADCAST_START			= 110				;		// rcv: UID, ready?(RET_READY:RET_NOTREADY)
 
-		public const int CS_REQ_STOP			= 111					;		// snd:
-		public const int SC_BROADCAST_STOP		= 112					;		// rcv: UID
-		public const int SC_BROADCAST_QUIT		= 113					;		// rcv:
+		public const int CS_REQ_STOP				= 111				;		// snd:
+		public const int SC_BROADCAST_STOP			= 112				;		// rcv: UID
+		public const int SC_BROADCAST_QUIT			= 113				;		// rcv:
 
-		public const int CS_REQ_ECHO			= 101					;		// snd/rcv: 1:1 data max(1024byte)
-		public const int CS_REQ_BROADCAST		= 102					;		// snd/rcv: 1:n data max(1024byte)
+		public const int CS_REQ_ECHO				= 101				;		// snd/rcv: 1:1 data max(1024byte)
+		public const int CS_REQ_BROADCAST			= 102				;		// snd/rcv: 1:n data max(1024byte)
 
-		public const int RST_OWNER_TRUE			= 1						;		// snd/rcv: is owner
-		public const int RST_OWNER_FALSE		= 2						;		// snd/rcv: is not owner
-		public const int RST_READY_TRUE			= 1						;		// snd/rcv: is ready
-		public const int RST_READY_FALSE		= 2						;		// snd/rcv: is not ready
-		public const int RST_SUCCESS			= 1						;		// snd/rcv: result success
-		public const int RST_FAIL				= 2						;		// snd/rcv: result failed
+		public const int RST_OWNER_TRUE				= 1					;		// snd/rcv: is owner
+		public const int RST_OWNER_FALSE			= 2					;		// snd/rcv: is not owner
+		public const int RST_READY_TRUE				= 1					;		// snd/rcv: is ready
+		public const int RST_READY_FALSE			= 2					;		// snd/rcv: is not ready
+		public const int RST_SUCCESS				= 1					;		// snd/rcv: result success
+		public const int RST_FAIL					= 2					;		// snd/rcv: result failed
 
 		// Game play Protocol
-		public const int OP_DEFAULT				= 0						;		// Default
-		public const int OP_CHAT				= 2						;		// Chatting
+		public const int OP_DEFAULT					= 0					;		// Default
+		public const int OP_CHAT					= 2					;		// Chatting
 	}
 
 
@@ -75,16 +72,16 @@ namespace PGN
 	public class Packet
 	{
 		// atrribute
-		protected	ushort	m_len = 0;								// total length
-		protected	int		m_opp = -1;								// op code
-		protected	byte[]	m_buf = new byte[NTC.PCK_MAX];			// buffer
+		protected ushort	m_len = 0;								// total length
+		protected int		m_opp = -1;								// op code
+		protected byte[]	m_buf = new byte[NTC.PCK_MAX];			// buffer
 
-		public	ushort	Len	{ get{ return m_len;} set{m_len = value; byte[] b=BitConverter.GetBytes(m_len); Array.Copy(b,0, m_buf,  0, 2); }}
-		public	int		Opp	{ get{ return m_opp;} set{m_opp = value; byte[] b=BitConverter.GetBytes(m_opp); Array.Copy(b,0, m_buf,  2, 2); }}
-		public	byte[]	Buf { get{ return m_buf;}}
+		public	ushort		Len	{ get{ return m_len;} set{m_len = value; byte[] b=BitConverter.GetBytes(m_len); Array.Copy(b,0, m_buf,  0, 2); }}
+		public	int			Opp	{ get{ return m_opp;} set{m_opp = value; byte[] b=BitConverter.GetBytes(m_opp); Array.Copy(b,0, m_buf,  2, 2); }}
+		public	byte[]		Buf { get{ return m_buf;}}
 
-		public	int		DataLen{ get{ return (m_len - NTC.PCK_HEAD); }}
-		public	byte[]	DataBuf{ get{
+		public	int			DataLen{ get{ return (m_len - NTC.PCK_HEAD); }}
+		public	byte[]		DataBuf{ get{
 				int l = m_len - NTC.PCK_HEAD;
 				var v = new byte[l];
 				Array.Copy(m_buf, NTC.PCK_HEAD, v, 0, l);
@@ -186,7 +183,6 @@ namespace PGN
 			return scH.Handle.ToInt32();
 		}
 
-
 		public static int EnCrypt(ref byte[] dst, ref int lenD, byte[] src, int lenS)
 		{
 			Array.Clear(dst, 0, dst.Length);
@@ -196,7 +192,6 @@ namespace PGN
 			return lenD;
 		}
 
-
 		public static int DeCrypt(ref byte[] dst, ref int lenD, byte[] src, int lenS)
 		{
 			Array.Clear(dst, 0, dst.Length);
@@ -205,8 +200,6 @@ namespace PGN
 			lenD  = lenS;
 			return lenD;
 		}
-
-
 
 		// generate Perlin noise
 		public static byte [] PerlinNoise(int key1, int key2, int key3, int key4)
@@ -219,19 +212,15 @@ namespace PGN
 	abstract class TcpBase
 	{
 		// for controll
-		protected	int						m_aId	= -1;						// id from server
-		protected	TcpBase					m_pPrn	= null;						// Parent instance
-		protected	object					m_oLock	= new object();				// synchronizer
+		protected int			m_aId	= -1;									// id from server
+		protected TcpBase		m_pPrn	= null;									// Parent instance
+		protected object		m_oLock	= new object();							// synchronizer
 
 		// for network socket
-		protected	Socket					m_scH   = null;
-		protected	EndPoint				m_sdH	= null;
-		protected	SocketAsyncEventArgs	m_arAcp = null;
-		protected	SocketAsyncEventArgs	m_arCon = null;
-		protected	SocketAsyncEventArgs	m_arRcv = null;
-		protected	SocketAsyncEventArgs	m_arSnd = null;
-		protected	string					m_sIp	= "";						// default ip
-		protected	int						m_sPt	= 0;						// default port
+		protected Socket		m_scH   = null;
+		protected EndPoint		m_sdH	= null;
+		protected string		m_sIp	= "";									// default ip
+		protected int			m_sPt	= 0;									// default port
 
 		abstract public void	Destroy();
 		virtual  public int		Query(string s, object v){	return PGN.NTC.EFAIL; }
@@ -248,17 +237,15 @@ namespace PGN
 	abstract class UdpBase
 	{
 		// for controll
-		protected	int						m_bHost	= 0;						// Client: 0, server: 1
-		protected	object					m_oLock	= new object();				// synchronizer
+		protected int			m_bHost	= 0;									// Client: 0, server: 1
+		protected object		m_oLock	= new object();							// synchronizer
 
 		// for network socket
-		protected	Socket					m_scH   = null;
-		protected	EndPoint				m_sdH	= null;						// local
-		protected	EndPoint				m_sdR	= null;						// remote
-		protected	SocketAsyncEventArgs	m_arRcv = null;
-		protected	SocketAsyncEventArgs	m_arSnd = null;
-		protected	string					m_sIp	= "";						// server ip
-		protected	int						m_sPt	= 0;						// server port
+		protected Socket		m_scH   = null;
+		protected EndPoint		m_sdH	= null;									// local
+		protected EndPoint		m_sdR	= null;									// remote
+		protected string		m_sIp	= "";									// server ip
+		protected int			m_sPt	= 0;									// server port
 
 		abstract public void	Destroy();
 		virtual  public int		Query(string s, object v){	return PGN.NTC.EFAIL; }
@@ -272,9 +259,6 @@ namespace PGN
 
 			lock(m_oLock)
 			{
-				m_arRcv	= null;
-				m_arSnd	= null;
-
 				m_scH.Shutdown(SocketShutdown.Both);
 				m_scH.Close();
 				m_scH = null;

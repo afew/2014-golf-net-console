@@ -16,7 +16,8 @@ namespace PGN
 {
 	class TcpSvr : PGN.TcpBase
 	{
-		List<PGN.TcpCln>	m_vCln	= new List<PGN.TcpCln>();					// client list
+		protected List<PGN.TcpCln>	m_vCln	= new List<PGN.TcpCln>();			// client list
+		protected Thread			m_thAcp = null;								// accept thread
 
 
 		override public void Destroy()
@@ -39,7 +40,6 @@ namespace PGN
 
 		public int Create(string ip, int pt)
 		{
-			bool		hr			= false;
 			IPAddress	ipAdd		= null;
 
 
@@ -64,15 +64,13 @@ namespace PGN
 												, SocketType.Stream
 												, ProtocolType.Tcp);
 
-			m_scH.Bind(m_sdH);		// Binding
-			m_scH.Listen(1);		// try to asynchronous connect server
+			m_scH.Bind(m_sdH);										// Binding
+			m_scH.Listen(1);										// Listen
 
-			m_arAcp					= new SocketAsyncEventArgs();
-			m_arAcp.Completed		+= new EventHandler<SocketAsyncEventArgs>(WorkAcp);
-			hr = m_scH.AcceptAsync(m_arAcp);
+			m_thAcp = new Thread(new ThreadStart(WorkAcp));			// create accept thread
+			m_thAcp.Start();
 
-
-			return (false == hr)? NTC.EFAIL : NTC.OK;
+			return NTC.OK;
 		}
 
 
@@ -81,12 +79,12 @@ namespace PGN
 			if(null == m_scH)
 				return;
 
-
-			lock(m_oLock)
+			lock (m_oLock)
 			{
-				m_arAcp	= null;
+				m_thAcp.Abort();
+				m_thAcp = null;
 
-				m_scH.Shutdown(SocketShutdown.Both);
+				//m_scH.Shutdown(SocketShutdown.Both);
 				m_scH.Close();
 				m_scH = null;
 
@@ -96,30 +94,28 @@ namespace PGN
 		}
 
 
-		protected int AddNewClient(SocketAsyncEventArgs accpt)
+		protected int AddNewClient(Socket scH)
 		{
 			if(NTC.MAX_CONNECT <= m_vCln.Count)
 				return NTC.EFAIL;
 
-			Socket		scH = accpt.AcceptSocket;
-			EndPoint	sdH = accpt.RemoteEndPoint;
-
+			EndPoint	sdH   = scH.RemoteEndPoint;
 			int			netId = PGN.Util.GetSocketId(ref scH);
-			TcpCln		pCln = new TcpCln(netId);
-
+			TcpCln		pCln  = new TcpCln(netId);
 
 			pCln.Create(this, scH, sdH);
 
 			//string guid = Guid.NewGuid().ToString().ToUpper();
 
-
-			string crpKey = netId.ToString() + " DFNET_ENCRYPTION_KEY_BYTE_STRING";
+			string crpKey = netId.ToString() + " PGN_ENCRYPTION_KEY_BYTE_STRING";
 
 			System.Console.WriteLine("Net Client: " + crpKey);
 
 			pCln.Send(crpKey, NTC.OP_DEFAULT);
 
 			m_vCln.Add(pCln);
+			pCln.Recv();
+
 			return NTC.OK;
 		}
 
@@ -143,62 +139,36 @@ namespace PGN
 		////////////////////////////////////////////////////////////////////////////
 		// Inner Process...
 
-		protected void WorkAcp(object sender, SocketAsyncEventArgs args)
+		protected void WorkAcp()
 		{
-			int hr = 0;
-
 			try
 			{
-				SocketError				err = args.SocketError;
-				int						rcn = args.BytesTransferred;
-				byte[]					rcb = args.Buffer;
-				SocketAsyncOperation	opc = args.LastOperation;
-
-				if(SocketAsyncOperation.Accept == opc)
+				while( true)
 				{
-					if(err != SocketError.Success)
+					Socket scH = null;
+
+					scH = m_scH.Accept();
+
+					Console.WriteLine("IoAcpt::New Client::" + scH);
+
+					lock (m_oLock)
 					{
-						Console.WriteLine("WorkAcp::Cann't Accept Client");
-						CloseSocket();
-
-						return;
-					}
-
-					Socket scH = args.AcceptSocket;
-
-		            if(false == scH.Connected)
-					{
-						Console.WriteLine("WorkAcp::Cann't Connect to Client");
-					}
-					else
-					{
-						Console.WriteLine("WorkAcp::New Client::" + scH);
-
-						lock(m_oLock)
-						{
-							hr = AddNewClient(args);
-							if(0 > hr)
-								Console.WriteLine("WorkAcp::Client List is Full");
-						}
-					}
-
-					lock(m_oLock)
-					{
-						args.AcceptSocket = null;
-						m_scH.AcceptAsync(m_arAcp);
+						int hr = AddNewClient(scH);
+						if (0 > hr)
+							Console.WriteLine("IoAcpt::Client List is Full");
 					}
 				}
 			}
-			catch(SocketException)
+
+			catch (SocketException)
 			{
-				Console.WriteLine("IoComplete::SocketException");
+				Console.WriteLine("WorkAcp::SocketException");
 			}
-			catch(Exception)
+			catch (Exception)
 			{
-				Console.WriteLine("IoComplete::Exception");
+				Console.WriteLine("WorkAcp::Exception");
 			}
 		}
-
 	}
 
 }// namespace PGN
