@@ -1,13 +1,8 @@
-﻿// DF Packet Struct
+﻿// PG Packet Struct
 //
 // type	byte
-// sep	2	: separater	0xcccc =110011001100100
-// ver	2	: version year, month, day/2 Exception) 0x134B =>2013/04/22
-// crp	2	: crypto method. nothing: 0, method: [1,65535]
-//
 // len	2	: packet length
-// opp	4	: operation protocol
-// sqc	4	: packet sequence(auto AddressFamily)
+// opp	2	: operation protocol
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -17,69 +12,75 @@ using System.Net.Sockets;
 
 namespace PGN
 {
-	static class NTC													// NET CONSTANT
+	////////////////////////////////////////////////////////////////////////////
+	// constant
+	static class NTC
 	{
-		// packet seperator, version
-		public const byte PCK_SEP		= unchecked((byte)0xCC)		;	// Packet seperator
-		public const byte PCK_V_M		= unchecked((byte)0x13)		;	// Packet major version(year)
-		public const byte PCK_V_N		= unchecked((byte)0x41)		;	// Packet minor version(month and date)
-
 		// packet header
-		public const int PCK_DATA		= 1360						;	// packet data size
-		public const int PCK_SVC		= 2 + 2 + 2					;	// sep + ver + crp
-		public const int PCK_LOS		= 2 + 4 + 4					;	// len + opp + sqc
-		public const int PCK_HEAD		= PCK_SVC + PCK_LOS			;	// svc + los
-		public const int PCK_MAX		= PCK_HEAD + PCK_DATA		;	// max mtu for application
+		public const int PCK_DATA				= 1360					;		// packet data size
+		public const int PCK_HEAD				= 2 + 2					;		// len + opp
+		public const int PCK_MAX				= PCK_HEAD + PCK_DATA	;		// max mtu for application
 
 		//
-		public const int PCK_KEY		= 128+32					;	// Key size
-		public const int PCK_LIST		= 10						;	// Buffer List count
+		public const int PCK_KEY				= 128+32				;		// Key size
+		public const int PCK_LIST				= 10					;		// Buffer List count
 
 
 		// Network state
-		public const int OK				= 0							;	// Network Ok
-		public const int EFAIL			= -1						;	// Network fail
-		public const int DEFAULT		= OK						;	// Network Default state
+		public const int OK						= 0						;		// Network Ok
+		public const int EFAIL					= -1					;		// Network fail
+		public const int WAIT					= 1						;		// Network wait message after sending data
+		public const int DEFAULT				= OK					;		// Network Default state
 
+
+		public const int MAX_CONNECT	= 3600							;		// packet data size
+		public const int DNF_CLIENT		= 0								;		// Net app type: client
+		public const int DNF_SERVER		= 1								;		// Net app type: server
 
 		// Operation Protocol
-		public const int OPCS_ACK		= 0							;	// Ok
-		public const int OPCS_EFAIL		= -1						;	// Fail
-		public const int OPCS			= unchecked((int)0x10000)	;	// client to server
-		public const int OPSC			= unchecked((int)0x70000)	;	// server to client
+		public const int CS_REQ_LOGIN			= 103					;		// snd: character name: uchar20
+		public const int SC_ANS_LOGIN			= 104					;		// rcv: UID(uint32) + character name(char20)
+		public const int SC_BROADCAST_USERLIST	= 105					;		// rcv: User Number(uint8) + [UID(uint32) + charcater name(uchar20) + owner(uint8) + ready(uint8)] * N
+		public const int SC_BROADCAST_LOGOUT	= 114					;		// rcv: UID
 
-		public const int OP_DEFAULT		= 0							;	// Default
-		public const int OP_MSG			= 1							;	// Simple Message
-		public const int OP_CHAT		= 2							;	// Chatting
-		public const int OP_LOGIN		= 3							;	// create new character
-		public const int OP_CHAR_CREATE	= 4							;	// select the character for game play
-		public const int OP_CHAR_SELECT	= 5							;	//
-		public const int OP_TOWN		= 6							;	// enter the the town
-		public const int OP_DUNGEON		= 7							;	// enter the dungeon
+		public const int CS_REQ_READY			= 106					;		// snd:
+		public const int SC_BROADCAST_READY		= 107					;		// rcv: UID, ready?(RET_READY:RET_NOTREADY)
 
-		public const int MAX_CONNECT	= 3600						;	// packet data size
-		public const int DNF_CLIENT		= 0							;	// Net app type: client
-		public const int DNF_SERVER		= 1							;	// Net app type: server
+		public const int CS_REQ_GO				= 108					;		// snd:
+		public const int SC_REQ_GO				= 109					;		// rcv: uint8
+		public const int SC_BROADCAST_START		= 110					;		// rcv: UID, ready?(RET_READY:RET_NOTREADY)
+
+		public const int CS_REQ_STOP			= 111					;		// snd:
+		public const int SC_BROADCAST_STOP		= 112					;		// rcv: UID
+		public const int SC_BROADCAST_QUIT		= 113					;		// rcv:
+
+		public const int CS_REQ_ECHO			= 101					;		// snd/rcv: 1:1 data max(1024byte)
+		public const int CS_REQ_BROADCAST		= 102					;		// snd/rcv: 1:n data max(1024byte)
+
+		public const int RST_OWNER_TRUE			= 1						;		// snd/rcv: is owner
+		public const int RST_OWNER_FALSE		= 2						;		// snd/rcv: is not owner
+		public const int RST_READY_TRUE			= 1						;		// snd/rcv: is ready
+		public const int RST_READY_FALSE		= 2						;		// snd/rcv: is not ready
+		public const int RST_SUCCESS			= 1						;		// snd/rcv: result success
+		public const int RST_FAIL				= 2						;		// snd/rcv: result failed
+
+		// Game play Protocol
+		public const int OP_DEFAULT				= 0						;		// Default
+		public const int OP_CHAT				= 2						;		// Chatting
 	}
 
 
-
 	////////////////////////////////////////////////////////////////////////////////
-	// Packet buffer
-
+	// Packet
 	public class Packet
 	{
 		// atrribute
-		protected	ushort	m_crp = 0;								// crypto id
 		protected	ushort	m_len = 0;								// total length
 		protected	int		m_opp = -1;								// op code
-		protected	uint	m_sqc = 0;								// sequence number
-		protected	byte[]	m_buf = new byte[NTC.PCK_MAX];	// buffer
+		protected	byte[]	m_buf = new byte[NTC.PCK_MAX];			// buffer
 
-		public	ushort	Crp	{ get{ return m_crp;} set{m_crp = value; byte[] b=BitConverter.GetBytes(m_crp); Array.Copy(b,0, m_buf,  4, 2); }}
-		public	ushort	Len	{ get{ return m_len;} set{m_len = value; byte[] b=BitConverter.GetBytes(m_len); Array.Copy(b,0, m_buf,  6, 2); }}
-		public	int		Opp	{ get{ return m_opp;} set{m_opp = value; byte[] b=BitConverter.GetBytes(m_opp); Array.Copy(b,0, m_buf,  8, 4); }}
-		public	uint	Sqc { get{ return m_sqc;} set{m_sqc = value; byte[] b=BitConverter.GetBytes(m_sqc); Array.Copy(b,0, m_buf, 12, 4); }}
+		public	ushort	Len	{ get{ return m_len;} set{m_len = value; byte[] b=BitConverter.GetBytes(m_len); Array.Copy(b,0, m_buf,  0, 2); }}
+		public	int		Opp	{ get{ return m_opp;} set{m_opp = value; byte[] b=BitConverter.GetBytes(m_opp); Array.Copy(b,0, m_buf,  2, 2); }}
 		public	byte[]	Buf { get{ return m_buf;}}
 
 		public	int		DataLen{ get{ return (m_len - NTC.PCK_HEAD); }}
@@ -108,12 +109,9 @@ namespace PGN
 		{
 			Array.Clear(m_buf, 0, m_buf.Length);
 
-			m_crp = 0;
 			m_len = NTC.PCK_HEAD;
 			m_opp = 0;
-			m_sqc = 0;
 		}
-
 
 		public void	PacketAdd(byte[] v, int l)
 		{
@@ -156,43 +154,23 @@ namespace PGN
 
 		public void SetupFrom(ref byte[] s,int l)
 		{
-			ushort c_sep = 0;
-			ushort c_ver = 0;
-
 			Array.Copy(s, 0, m_buf, 0, l);
 
-			c_sep = (ushort)System.BitConverter.ToInt16(m_buf,  0 );
-			c_ver = (ushort)System.BitConverter.ToInt16(m_buf,  2 );
-			m_crp = (ushort)System.BitConverter.ToInt16(m_buf,  4 );
-			m_len = (ushort)System.BitConverter.ToInt16(m_buf,  6 );
-			m_opp = (int   )System.BitConverter.ToInt32(m_buf,  8 );
-			m_sqc = (uint  )System.BitConverter.ToInt32(m_buf, 12 );
+			m_len = (ushort)System.BitConverter.ToInt16(m_buf,  0 );
+			m_opp = (int   )System.BitConverter.ToInt16(m_buf,  2 );
 		}
-
-		protected static byte[] cSep = new byte[2]{ NTC.PCK_SEP, NTC.PCK_SEP };
-		protected static byte[] cVer = new byte[2]{ NTC.PCK_V_N, NTC.PCK_V_M };
 
 		public void EnCode(ushort _crp, int _opp)	//, int sqc)
 		{
-			m_crp = _crp;
 			m_opp = _opp;
 
-			byte[] cCrp = BitConverter.GetBytes(m_crp);
 			byte[] cLen = BitConverter.GetBytes(m_len);
 			byte[] cOpp = BitConverter.GetBytes(m_opp);
 
-			// sep	2	: separater	0xcccc =110011001100100
-			// ver	2	: version year, month, day/2 Exception) 0x134B =>2013/04/22
-			// crp	2	: crypto method. nothing: 0, method: [1,65535]
 			// len	2	: packet length
-			// opp	4	: operation protocol
-			// sqc	4	: packet sequence(auto AddressFamily)
-
-			Array.Copy(cSep, 0, m_buf,  0, 2);
-			Array.Copy(cVer, 0, m_buf,  2, 2);
-			Array.Copy(cCrp, 0, m_buf,  4, 2);
-			Array.Copy(cLen, 0, m_buf,  6, 2);
-			Array.Copy(cOpp, 0, m_buf,  8, 4);
+			// opp	2	: operation protocol
+			Array.Copy(cLen, 0, m_buf,  0, 2);
+			Array.Copy(cOpp, 0, m_buf,  2, 2);
 
 			//byte[] bbSqc = BitConverter.GetBytes(sequnce);
 			//Array.Copy(bbSqc, 0, m_buf, 16, 4);
@@ -200,7 +178,7 @@ namespace PGN
 
 	}
 
-
+	// util
 	static class Util
 	{
 		public static int GetSocketId(ref System.Net.Sockets.Socket scH)
@@ -237,8 +215,7 @@ namespace PGN
 		}
 	}
 
-
-
+	// Tcp base
 	abstract class TcpBase
 	{
 		// for controll
@@ -267,7 +244,7 @@ namespace PGN
 		}
 	}
 
-
+	// udp base
 	abstract class UdpBase
 	{
 		// for controll

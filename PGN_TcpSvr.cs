@@ -16,9 +16,7 @@ namespace PGN
 {
 	class TcpSvr : PGN.TcpBase
 	{
-
-
-		List<PGN.TcpCln>					m_vCln	= new List<PGN.TcpCln>();
+		List<PGN.TcpCln>	m_vCln	= new List<PGN.TcpCln>();					// client list
 
 
 		override public void Destroy()

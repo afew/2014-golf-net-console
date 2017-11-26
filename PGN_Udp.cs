@@ -17,7 +17,7 @@ namespace PGN
 	class Udp : PGN.UdpBase
 	{
 		// for controll
-		protected	byte[]				m_rcvB	= new byte[NTC.PCK_DATA];	// receive buffer for packet
+		protected	byte[]				m_rcvB	= new byte[NTC.PCK_DATA];		// receive buffer for packet
 		protected	int					m_rcvN	= -1;							// current received count
 
 		protected	List<byte[]>		m_sndB	= new List<byte[]>();			// send queue buffer
@@ -25,8 +25,8 @@ namespace PGN
 		protected	int					m_sndN	= -1;							// current send index
 
 		protected	uint				m_nSqc	= 0;							// packet sequence
-		protected	PGN.Packet		m_sPck	= new PGN.Packet();			// for string message
-		protected	byte[]				m_vCrp	= new byte[NTC.PCK_KEY];	// key for crypto
+		protected	PGN.Packet		m_sPck	= new PGN.Packet();					// for string message
+		protected	byte[]				m_vCrp	= new byte[NTC.PCK_KEY];		// key for crypto
 
 
 		override public void Destroy()

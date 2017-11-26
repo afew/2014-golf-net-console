@@ -1,4 +1,4 @@
-﻿//
+﻿// Packet, util, tcp, udb base class.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -17,7 +17,7 @@ namespace PGN
 	class TcpCln : PGN.TcpBase
 	{
 		// for controll
-		protected	byte[]				m_rcvB	= new byte[NTC.PCK_DATA];	// receive buffer for packet
+		protected	byte[]				m_rcvB	= new byte[NTC.PCK_DATA];		// receive buffer for packet
 		protected	int					m_rcvN	= -1;							// current received count
 
 		protected	List<byte[]>		m_sndB	= new List<byte[]>();			// send queue buffer
@@ -26,9 +26,8 @@ namespace PGN
 
 		protected	uint				m_nSqc	= 0;							// packet sequence
 
-		protected	PGN.Packet		m_sPck	= new PGN.Packet();			// for string message
-
-		protected	byte[]				m_vCrp	= new byte[NTC.PCK_KEY];	// key for crypto
+		protected	PGN.Packet			m_sPck	= new PGN.Packet();				// for string message
+		protected	byte[]				m_vCrp	= new byte[NTC.PCK_KEY];		// key for crypto
 
 
 		override public void Destroy()
@@ -254,8 +253,12 @@ namespace PGN
 
 							Console.WriteLine(s_chat);
 
-							int op = PGN.NTC.OP_CHAT;
-							this.Send("server send::" + s_chat, op);
+							// is a client member of the server. echo...
+							if(null != m_pPrn)
+							{
+								int op = PGN.NTC.OP_CHAT;
+								this.Send("server send::" + s_chat, op);
+							}
 						}
 					}
 
@@ -327,7 +330,7 @@ namespace PGN
 				m_sPck.Reset();
 				m_sPck.PacketAdd(str);
 				m_sPck.EnCode(0, op);
-				m_sPck.Sqc = m_nSqc;
+
 
 				byte[]	s = m_sPck.Buf;
 				int		l = m_sPck.Len;
@@ -368,7 +371,6 @@ namespace PGN
 				int		nSnd = 0;
 
 				++m_nSqc;
-				pck.Sqc =m_nSqc;
 
 
 				++m_sndN;

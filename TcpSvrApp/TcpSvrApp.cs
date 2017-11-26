@@ -15,7 +15,7 @@ class TcpSvrApp
 		PGN.TcpSvr	pNet = new PGN.TcpSvr();
 		PGN.Packet	pPck = new PGN.Packet();
 
-		pNet.Create("127.0.0.1", 20000);
+		pNet.Create("192.168.0.7", 50000);
 
 
 		int c = 0;
